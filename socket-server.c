@@ -16,6 +16,8 @@ int main(void)
 
     bind(server, (struct sockaddr*)&address, address_len);
 
+    listen(server, 3);
+
     int new_socket = accept(server, (struct sockaddr*)&address, (socklen_t*)&address_len);
 
     char buffer[1024] = {0};
