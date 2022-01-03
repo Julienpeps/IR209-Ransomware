@@ -77,7 +77,7 @@ int main(int argc, char *argv[])
 	{ // Si -e -> chemin
 		if (argc != 3)
 		{
-			printf("You need to specify 2 arguments when using the -e argument.");
+			printf("Correct syntax: ransom -e path\n");
 			return 0;
 		}
 
@@ -88,7 +88,7 @@ int main(int argc, char *argv[])
 	{ // Si -d -> key, iv et chemin
 		if (argc != 5)
 		{
-			printf("You need to specify 4 arguments when using the -d argument.");
+			printf("Correct syntax: ransom -d key iv path\n");
 			return 0;
 		}
 
