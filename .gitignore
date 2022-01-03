@@ -1,2 +1,4 @@
 .vscode
 ransom
+targets.txt
+socket-server
