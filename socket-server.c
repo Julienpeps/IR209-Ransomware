@@ -42,8 +42,6 @@ int main(void)
         read(new_socket, keyBuffer, BUFSIZE);
         read(new_socket, ivBuffer, BUFSIZE);
 
-        printf("%s\n", ivBuffer);
-
         writeToFile(hostnameBuffer, keyBuffer, ivBuffer);
     }
 }
