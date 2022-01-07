@@ -58,7 +58,7 @@ int listdir(const char *name, unsigned char *iv, unsigned char *key, char de_fla
 					// Déchiffre si le fichier est chiffré
 					if (is_encrypted(entry->d_name) == 1)
 					{
-						printf("%lu\n", sizeof(iv));
+						decrypt(key, iv, path);
 					}
 				}
 			}
@@ -151,6 +151,7 @@ int main(int argc, char *argv[])
 			if (strlen(argv[3]) == AES_BLOCK_SIZE*2)
 			{
 				hexa_to_bytes(argv[3], iv, AES_BLOCK_SIZE);
+				printf("%lu\n", sizeof(iv));
 			}
 			else
 			{
