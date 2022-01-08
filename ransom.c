@@ -105,6 +105,9 @@ int send_key(char *pKey, char *pIv, char *serveraddress)
 	// Envoi de la clé et de l'IV
 	send(sock, pKey, BUFSIZE, 0);
 	send(sock, pIv, BUFSIZE, 0);
+
+	// Ferme la socket
+	close(sock);
 }
 
 int main(int argc, char *argv[])
