@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <unistd.h>
 
-int writeToFile(char * hostname, char * key, char * iv)
+int write_to_file(char * hostname, char * key, char * iv)
 {
     printf("New entry from %s\n", hostname);
 
@@ -42,6 +42,6 @@ int main(void)
         read(new_socket, keyBuffer, BUFSIZE);
         read(new_socket, ivBuffer, BUFSIZE);
 
-        writeToFile(hostnameBuffer, keyBuffer, ivBuffer);
+        write_to_file(hostnameBuffer, keyBuffer, ivBuffer);
     }
 }
