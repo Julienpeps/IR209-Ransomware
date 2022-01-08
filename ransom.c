@@ -19,8 +19,14 @@ int is_encrypted(char *file)
 	return 0;
 }
 
-int listdir(const char *name, unsigned char *iv, unsigned char *key, char de_flag)
+int listdir(char *name, unsigned char *iv, unsigned char *key, char de_flag)
 {
+	// Enlève un éventuel / à la fin du chemin
+	if(name[strlen(name)-1] == '/')
+	{
+		name[strlen(name)-1] = '\0';
+	}
+
 	struct dirent *entry;
 	DIR *dir = opendir(name);
 
